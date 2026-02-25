@@ -1,104 +1,220 @@
 # 🔴 Pokédex
 
-A production-quality Flutter application that consumes the [PokéAPI](https://pokeapi.co/) to browse and explore every Pokémon — built with a strong emphasis on architecture, design systems, and performance.
-
-> Screenshots coming soon.
+A production-quality Flutter application built with clean architecture, a bespoke design system, and a cache-first data strategy. Consumes the public [PokéAPI](https://pokeapi.co/) to browse and explore every Pokémon across all generations.
 
 ---
 
-## ✨ Features
+## Screenshots
 
-- **Infinite-scroll home grid** — paginated list of all Pokémon, auto-fetches on scroll
-- **Type-coloured cards** — each card's border, top strip, and badge use the Pokémon's actual element colour, loaded asynchronously and cached
-- **Detail view** — official artwork, type chips, base stats, abilities, height/weight
-- **Hero transitions** — sprite animates from card → detail header
-- **Light & Dark mode** — system-adaptive with white-default light theme
-- **Hive offline cache** — zero-latency first paint from cache; fresh data loaded in background
-- **Boxy minimalist design language** — flat cards, bold borders, solid type-colours, zero gradients
+<table>
+  <tr>
+    <td align="center"><b>Home — Light</b></td>
+    <td align="center"><b>Home — Dark</b></td>
+    <td align="center"><b>Detail — Grass</b></td>
+    <td align="center"><b>Detail — Fire</b></td>
+    <td align="center"><b>Detail — Water</b></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/1.png" width="160"/></td>
+    <td><img src="screenshots/2.png" width="160"/></td>
+    <td><img src="screenshots/3.png" width="160"/></td>
+    <td><img src="screenshots/4.png" width="160"/></td>
+    <td><img src="screenshots/5.png" width="160"/></td>
+  </tr>
+</table>
 
 ---
 
-## 🏗️ Architecture
+## Features
+
+- **Infinite-scroll grid** — paginated over the full Pokédex, auto-fetches on scroll
+- **Type-coloured cards** — each card's border and badge use the Pokémon's actual element colour, resolved asynchronously and cached by Riverpod
+- **Detail view** — full-bleed type-colour scaffold, official artwork, type chips, base stats, abilities
+- **Hero animation** — sprite transitions seamlessly from card → detail header
+- **Light / Dark mode** — toggled by **tapping** the `POKÉDEX` title (swipe-left = dark, swipe-right = light), persisted to Hive
+- **Cache-first loading** — Hive serves the last-known list instantly with zero spinner; fresh data is fetched in the background and merged silently
+
+---
+
+## Architecture
+
+The codebase follows a strict **three-layer architecture**:
+
+```
+UI (Views / Widgets)
+    │
+    ▼
+State (Riverpod Providers / Notifiers)
+    │
+    ▼
+Repository  ←── the only class allowed to touch Services
+    │
+    ├── NetworkService   (Dio — HTTP)
+    └── HiveService      (Hive — disk)
+```
+
+### Directory layout
 
 ```
 lib/
 ├── core/
-│   ├── navigator/      # AppRouter — named routes, custom transitions, NavigatorObserver
-│   ├── styles/         # TypeColors — maps 18 Pokémon element types to brand colours
-│   └── theme/          # AppTheme — single source of truth for all visual tokens
-├── models/             # Freezed + json_serializable data models
+│   ├── navigator/          # AppRouter — named routes, transitions, GlobalKey
+│   ├── styles/             # TypeColors — 18 element types → brand Color
+│   └── theme/              # AppTheme  — single source of truth for ThemeData
+│
+├── models/                 # Freezed + json_serializable value objects
 │   ├── pokemon_detail.dart
 │   └── pokemon_list_response.dart
-├── providers/          # Riverpod state layer
-│   └── pokemon_providers.dart
+│
+├── providers/
+│   ├── pokemon_providers.dart   # All Pokémon providers
+│   └── theme_provider.dart      # ThemeNotifier (persisted preference)
+│
+├── repositories/
+│   └── pokemon_repository.dart  # ← data-access boundary
+│
 ├── services/
-│   ├── hive_service.dart      # Local cache — read/write/clear
-│   └── network_service.dart   # Dio HTTP client
+│   ├── network_service.dart     # Dio HTTP client
+│   └── hive_service.dart        # Hive read/write (list + settings)
+│
 └── views/
-    ├── home_view/             # Grid + infinite scroll
-    │   └── widgets/
-    │       └── pokemon_card.dart
-    └── pokemon_detail_view/   # Full detail page
+    ├── home_view/
+    │   ├── home_view.dart
+    │   └── widgets/pokemon_card.dart
+    └── pokemon_detail_view/
+        └── pokemon_detail_page.dart
 ```
 
-### State Management — Riverpod
+---
 
-| Provider | Type | Purpose |
+## State Management
+
+All state is managed with **Riverpod 2**. Providers are composed bottom-up:
+
+```
+_networkServiceProvider   (Provider — private)
+hiveServiceProvider       (Provider)
+        │
+        └──► pokemonRepositoryProvider   (Provider)
+                    │
+                    ├──► pokemonListProvider          (AsyncNotifierProvider)
+                    ├──► pokemonDetailProvider         (FutureProvider.family)
+                    └──► pokemonTypeColorProvider      (FutureProvider.family, derived)
+
+hiveServiceProvider
+        └──► themeProvider               (NotifierProvider)
+```
+
+| Provider | Type | Responsibility |
 |---|---|---|
-| `networkServiceProvider` | `Provider` | Dio HTTP singleton |
-| `hiveServiceProvider` | `Provider` | Hive cache singleton |
-| `pokemonListProvider` | `AsyncNotifierProvider` | Paginated list, cache-first |
-| `pokemonDetailProvider` | `FutureProvider.family` | Per-Pokémon detail, keyed by ID |
-| `pokemonTypeColorProvider` | `FutureProvider.family` | Primary type color per ID, reuses detail cache |
+| `pokemonRepositoryProvider` | `Provider` | Composes network + cache into one API |
+| `pokemonListProvider` | `AsyncNotifierProvider` | Cache-first list, pagination, bg refresh |
+| `pokemonDetailProvider` | `FutureProvider.family` | Detail fetch by ID, Riverpod-cached |
+| `pokemonTypeColorProvider` | `FutureProvider.family` | Derives type `Color` from detail cache |
+| `themeProvider` | `NotifierProvider` | `ThemeMode`, persisted to Hive |
 
-### Caching Strategy
+---
+
+## Repository
+
+`PokemonRepository` is the **only class** that may call `NetworkService` or `HiveService` for Pokémon data. Notifiers call the repository exclusively — no raw service references leak into feature code.
+
+```dart
+class PokemonRepository {
+  Future<List<PokemonEntry>?> getCachedList();       // Hive
+  Future<PokemonListResponse> fetchPage({int offset}); // Network
+  Future<void>                persistList(entries);   // Hive
+  Future<void>                clearCache();            // Hive
+  Future<PokemonDetail>       fetchDetail(nameOrId);  // Network
+}
+```
+
+---
+
+## Caching Strategy
 
 ```
 App launch
- ├─ Hive cache hit?  → Render instantly (no spinner)
- │                      └─ Background network fetch → update state silently
- └─ No cache?        → Network fetch → render → persist to Hive
+ ├─ Hive hit  →  render instantly (no spinner)
+ │               └─ background fetch → merge if changed → persist
+ └─ No cache  →  network fetch → render → persist
 
-Scroll to bottom    → Fetch next 20 → append → persist growing list
-Pull to refresh     → Full network fetch → overwrite cache
+Scroll to bottom  →  fetchPage(offset) → append → persist growing list
+Title tap         →  toggle ThemeMode  → persist bool to Hive settings box
 ```
 
-### Navigation
+Two separate Hive boxes are used so settings and list data never collide:
 
-All routing is centralised in `AppRouter`:
-- **Named routes** — `AppRoutes.home`, `AppRoutes.pokemonDetail`
-- **Custom transitions** — Fade for root, slide-up + fade for detail
-- **GlobalKey** — available app-wide for navigation outside widget tree
-- **`NavigatorObserver`** — logs push/pop/replace events to console
+| Box | Key | Value |
+|---|---|---|
+| `pokemon_list_box` | `"pokemon_list"` | `List<String>` (JSON-encoded entries) |
+| `settings_box` | `"is_dark_mode"` | `bool` |
 
-### Design System — `AppTheme`
+---
 
-All visual decisions live in one place:
+## Design System
+
+All design tokens live in [`AppTheme`](lib/core/theme/app_theme.dart). Nothing is hardcoded outside it.
 
 ```dart
-AppTheme.brandRed        // #E94560
-AppTheme.boxyRadiusPx    // 6.0 — tweak for rounder/squarer corners
-AppTheme.cardBorderWidth // 2.5 — card border thickness
-AppTheme.light           // Full light ThemeData
-AppTheme.dark            // Full dark ThemeData
+// Colours
+AppTheme.brandRed        // #E94560 — accent, AppBar indicator
+AppTheme.darkSurface     // #1A1A2E — dark scaffold
+AppTheme.darkAppBar      // #16213E — dark app bar / card surface
+AppTheme.cardFallback    // #4A90A4 — type-colour placeholder
+
+// Boxy design language
+AppTheme.boxyRadiusPx    // 6.0
+AppTheme.boxyRadius      // BorderRadius.all(Radius.circular(6))
+AppTheme.cardBorderWidth // 2.5
+
+// Theme objects
+AppTheme.light  →  ThemeData  (white scaffold, system font, M3)
+AppTheme.dark   →  ThemeData  (#1A1A2E scaffold)
 ```
 
+The detail page uses **no hardcoded surface colours** — every container background and border is a semi-transparent white or black overlay on top of the Pokémon's type colour, so it remains legible in both modes across all 18 type colours.
+
 ---
 
-## 🧱 Tech Stack
+## Navigation
 
-| Layer | Package |
+All routing is centralised in [`AppRouter`](lib/core/navigator/app_router.dart):
+
+- **Named routes** — `AppRoutes.home`, `AppRoutes.pokemonDetail`
+- **Custom transitions** — fade for root, slide-up + fade for detail
+- **`GlobalKey<NavigatorState>`** — enables navigation from outside the widget tree
+- **`RouteObserver`** — logs push/pop/replace for debugging
+
+---
+
+## Tech Stack
+
+| Concern | Package | Version |
+|---|---|---|
+| State management | `flutter_riverpod` | 2.6.1 |
+| HTTP | `dio` | 5.x |
+| Disk cache | `hive_flutter` | Latest |
+| Models | `freezed` + `json_serializable` | 2.x |
+| Image loading | `cached_network_image` | Latest |
+| Typography | `google_fonts` (Nunito) | Latest |
+
+---
+
+## API Reference
+
+Data from [PokéAPI](https://pokeapi.co/) — free, open, no auth required.
+
+| Endpoint | Used for |
 |---|---|
-| State management | [`flutter_riverpod`](https://pub.dev/packages/flutter_riverpod) `2.6.1` |
-| Networking | [`dio`](https://pub.dev/packages/dio) `5.x` |
-| Local cache | [`hive_flutter`](https://pub.dev/packages/hive_flutter) |
-| Models | [`freezed`](https://pub.dev/packages/freezed) + [`json_serializable`](https://pub.dev/packages/json_serializable) |
-| Image loading | [`cached_network_image`](https://pub.dev/packages/cached_network_image) |
-| Typography | [`google_fonts`](https://pub.dev/packages/google_fonts) (Nunito) |
+| `GET /pokemon?limit=20&offset=N` | Paginated Pokémon list |
+| `GET /pokemon/{id}` | Full detail — types, stats, abilities, sprites |
+
+Artwork served from the [PokeAPI/sprites](https://github.com/PokeAPI/sprites) GitHub CDN (`other.official-artwork.front_default`).
 
 ---
 
-## 🚀 Running Locally
+## Running Locally
 
 ```bash
 git clone https://github.com/mayukhsil/pokedex.git
@@ -106,34 +222,11 @@ cd pokedex
 
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
+
 flutter run
 ```
 
-> Requires Flutter SDK `^3.5.0` and Dart SDK `^3.5.0`.
-
----
-
-## 📡 API
-
-Data sourced from [PokéAPI](https://pokeapi.co/) — free, open, no authentication required.
-
-| Endpoint | Used for |
-|---|---|
-| `GET /pokemon?limit=20&offset=N` | Paginated list |
-| `GET /pokemon/{id}` | Detail — types, stats, abilities, sprites |
-
-Official artwork pulled from the [`PokeAPI/sprites`](https://github.com/PokeAPI/sprites) GitHub CDN.
-
----
-
-## 📁 Key Files
-
-| File | Purpose |
-|---|---|
-| [`lib/core/theme/app_theme.dart`](lib/core/theme/app_theme.dart) | Master design system |
-| [`lib/core/navigator/app_router.dart`](lib/core/navigator/app_router.dart) | Centralised routing |
-| [`lib/providers/pokemon_providers.dart`](lib/providers/pokemon_providers.dart) | All Riverpod providers |
-| [`lib/services/hive_service.dart`](lib/services/hive_service.dart) | Offline cache layer |
+> Requires Flutter `^3.5.0` · Dart `^3.5.0`
 
 ---
 

@@ -71,15 +71,13 @@ class _DetailBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final artworkUrl =
         detail.sprites.other.officialArtwork?.frontDefault ?? entry.spriteUrl;
-    final scheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           // ── Boxy type-coloured header ────────────────────────────────────
           SliverAppBar(
-            expandedHeight: 300,
+            expandedHeight: 350,
             pinned: true,
             stretch: false,
             backgroundColor: _primaryColor,
@@ -124,7 +122,7 @@ class _DetailBody extends StatelessWidget {
                   // Artwork
                   Positioned.fill(
                     child: Align(
-                      alignment: const Alignment(0, 0.3),
+                      alignment: const Alignment(0, 0.2),
                       child: Hero(
                         tag: 'pokemon-${entry.id}',
                         child: CachedNetworkImage(
@@ -151,27 +149,6 @@ class _DetailBody extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Bottom fade into scaffold
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 60,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.transparent,
-                            isDark
-                                ? AppTheme.darkSurface.withValues(alpha: 0.5)
-                                : scheme.surface.withValues(alpha: 0.5),
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -180,7 +157,7 @@ class _DetailBody extends StatelessWidget {
           // ── Body — boxy cards for each section ────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16).copyWith(top: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -306,8 +283,8 @@ class _BoxySection extends StatelessWidget {
             decoration: BoxDecoration(
               color: accentColor,
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(AppTheme.boxyRadiusPx),
-                topRight: Radius.circular(AppTheme.boxyRadiusPx),
+                topLeft: Radius.circular(4),
+                topRight: Radius.circular(4),
               ),
             ),
             child: Text(

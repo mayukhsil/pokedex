@@ -10,7 +10,7 @@ class PokemonDetail with _$PokemonDetail {
     required String name,
     required int height,
     required int weight,
-    @JsonKey(name: 'base_experience') int? baseExperience,
+    int? baseExperience,
     required List<PokemonTypeSlot> types,
     required List<PokemonStatSlot> stats,
     required List<PokemonAbilitySlot> abilities,
@@ -35,7 +35,7 @@ class PokemonTypeSlot with _$PokemonTypeSlot {
 @freezed
 class PokemonStatSlot with _$PokemonStatSlot {
   const factory PokemonStatSlot({
-    @JsonKey(name: 'base_stat') required int baseStat,
+    required int baseStat,
     required int effort,
     required NamedResource stat,
   }) = _PokemonStatSlot;
@@ -47,7 +47,7 @@ class PokemonStatSlot with _$PokemonStatSlot {
 @freezed
 class PokemonAbilitySlot with _$PokemonAbilitySlot {
   const factory PokemonAbilitySlot({
-    @JsonKey(name: 'is_hidden') required bool isHidden,
+    required bool isHidden,
     required int slot,
     required NamedResource ability,
   }) = _PokemonAbilitySlot;
@@ -59,8 +59,8 @@ class PokemonAbilitySlot with _$PokemonAbilitySlot {
 @freezed
 class PokemonSprites with _$PokemonSprites {
   const factory PokemonSprites({
-    @JsonKey(name: 'front_default') String? frontDefault,
-    @JsonKey(name: 'front_shiny') String? frontShiny,
+    String? frontDefault,
+    String? frontShiny,
     required PokemonOtherSprites other,
   }) = _PokemonSprites;
 
@@ -70,9 +70,8 @@ class PokemonSprites with _$PokemonSprites {
 
 @freezed
 class PokemonOtherSprites with _$PokemonOtherSprites {
-  const factory PokemonOtherSprites({
-    @JsonKey(name: 'official-artwork') OfficialArtwork? officialArtwork,
-  }) = _PokemonOtherSprites;
+  const factory PokemonOtherSprites({OfficialArtwork? officialArtwork}) =
+      _PokemonOtherSprites;
 
   factory PokemonOtherSprites.fromJson(Map<String, dynamic> json) =>
       _$PokemonOtherSpritesFromJson(json);
@@ -80,10 +79,8 @@ class PokemonOtherSprites with _$PokemonOtherSprites {
 
 @freezed
 class OfficialArtwork with _$OfficialArtwork {
-  const factory OfficialArtwork({
-    @JsonKey(name: 'front_default') String? frontDefault,
-    @JsonKey(name: 'front_shiny') String? frontShiny,
-  }) = _OfficialArtwork;
+  const factory OfficialArtwork({String? frontDefault, String? frontShiny}) =
+      _OfficialArtwork;
 
   factory OfficialArtwork.fromJson(Map<String, dynamic> json) =>
       _$OfficialArtworkFromJson(json);
