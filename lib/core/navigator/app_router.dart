@@ -3,13 +3,18 @@ import 'package:pokedex/models/pokemon_list_response.dart';
 import 'package:pokedex/views/home_view/home_view.dart';
 import 'package:pokedex/views/pokemon_detail_view/pokemon_detail_page.dart';
 
-/// Named route constants — single location for every route string.
+/// All named route strings in one place. Import this wherever you need a route
+/// constant — never write the raw string in feature code.
 abstract final class AppRoutes {
+  /// Root home grid (`/`).
   static const String home = '/';
+
+  /// Pokémon detail page. Expects a [PokemonEntry] passed as `arguments`.
   static const String pokemonDetail = '/pokemon/detail';
 }
 
-/// Thin logging observer for navigation events.
+/// Logs navigation events to the debug console. Wired into
+/// [MaterialApp.navigatorObservers] via [AppRouter.observer].
 class _AppNavigatorObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
@@ -29,15 +34,46 @@ class _AppNavigatorObserver extends NavigatorObserver {
   }
 }
 
+/// Centralised routing for the entire application.
+///
+/// All navigation must go through this class — never call [Navigator.push]
+/// with a widget directly. Benefits:
+/// - Route strings are in one place ([AppRoutes]).
+/// - Transitions are defined once and applied consistently.
+/// - The [navigatorKey] allows navigation from outside the widget tree
+///   (e.g. from a service or notifier).
+///
+/// **Wiring into [MaterialApp]:**
+/// ```dart
+/// MaterialApp(
+///   navigatorKey:       AppRouter.navigatorKey,
+///   navigatorObservers: [AppRouter.observer],
+///   onGenerateRoute:    AppRouter.onGenerateRoute,
+///   initialRoute:       AppRoutes.home,
+/// )
+/// ```
+///
+/// **Navigating from a widget:**
+/// ```dart
+/// AppRouter.toPokemonDetail(context, entry);
+/// ```
 abstract final class AppRouter {
-  /// Global navigator key — use for navigation outside of a widget tree.
+  /// Global navigator key — use for navigation outside the widget tree.
+  ///
+  /// Attach to [MaterialApp.navigatorKey] once; then call:
+  /// ```dart
+  /// AppRouter.navigatorKey.currentState?.pushNamed(AppRoutes.pokemonDetail, arguments: entry);
+  /// ```
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>(debugLabel: 'root');
 
   /// Observer wired into [MaterialApp.navigatorObservers].
   static final NavigatorObserver observer = _AppNavigatorObserver();
 
-  /// Central route factory.
+  /// Route factory — map every [AppRoutes] constant to a widget + transition.
+  ///
+  /// Unknown routes render a plain [Scaffold] with an error message rather
+  /// than crashing, making debug easier.
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.home:
@@ -57,9 +93,9 @@ abstract final class AppRouter {
     }
   }
 
-  // ── Transition helpers ────────────────────────────────────────────────────
+  // ── Transition builders ───────────────────────────────────────────────────
 
-  /// Fade transition — used for root screens.
+  /// Simple opacity fade — used for root-level screen transitions.
   static PageRoute<T> _fade<T>(Widget page, RouteSettings settings) =>
       PageRouteBuilder<T>(
         settings: settings,
@@ -72,7 +108,10 @@ abstract final class AppRouter {
         transitionDuration: const Duration(milliseconds: 250),
       );
 
-  /// Slide-up transition — used for detail screens.
+  /// Subtle slide-up combined with fade — used for detail pages.
+  ///
+  /// The small vertical offset (`Offset(0, 0.08)`) gives depth without the
+  /// jarring full-screen slide common in many apps.
   static PageRoute<T> _slide<T>(Widget page, RouteSettings settings) =>
       PageRouteBuilder<T>(
         settings: settings,
@@ -93,9 +132,11 @@ abstract final class AppRouter {
         transitionDuration: const Duration(milliseconds: 300),
       );
 
-  // ── Convenience methods for use inside widgets ────────────────────────────
+  // ── Widget-friendly convenience methods ───────────────────────────────────
 
-  /// Push the Pokémon detail page for [entry].
+  /// Pushes [AppRoutes.pokemonDetail] with [entry] as arguments.
+  ///
+  /// Triggers the [_slide] transition automatically via [onGenerateRoute].
   static Future<void> toPokemonDetail(
     BuildContext context,
     PokemonEntry entry,

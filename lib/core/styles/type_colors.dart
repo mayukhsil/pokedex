@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
 
-/// Maps Pokémon type names to characteristic colours.
+/// Maps each of the 18 Pokémon element types to its characteristic brand colour.
+///
+/// Colours are sourced from the official Pokémon Scarlet / Violet type chart
+/// palette and are used throughout the app for card borders, detail headers,
+/// section accents, and type badge chips.
+///
+/// Usage:
+/// ```dart
+/// final color = TypeColors.forType('fire');  // Color(0xFFEE8130) or null
+/// ```
 class TypeColors {
+  /// Internal lookup — all type names stored in lowercase to match API responses.
   static const Map<String, Color> _typeMap = {
     'normal': Color(0xFFA8A77A),
     'fire': Color(0xFFEE8130),
@@ -23,10 +33,14 @@ class TypeColors {
     'fairy': Color(0xFFD685AD),
   };
 
+  /// Returns the colour for [type] (case-insensitive), or `null` if the type
+  /// name is unrecognised (e.g. a future API addition or a typo).
+  ///
+  /// Callers should fall back to [AppTheme.cardFallback] when this returns `null`.
   static Color? forType(String type) => _typeMap[type.toLowerCase()];
 
-  /// A best-effort guess for the colour based only on a pokemon's name.
-  /// Falls back to null if no match found.
+  /// Stub for a future name-based heuristic. Currently always returns `null`
+  /// — type colour requires a detail fetch.
   static Color? typeColorFor(String name) =>
       null; // resolved after detail fetch
 }
