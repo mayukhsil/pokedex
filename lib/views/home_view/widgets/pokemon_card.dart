@@ -50,8 +50,8 @@ class PokemonCard extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: typeColor,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(AppTheme.boxyRadiusPx),
-                  topRight: Radius.circular(AppTheme.boxyRadiusPx),
+                  topLeft: Radius.circular(2),
+                  topRight: Radius.circular(2),
                 ),
               ),
             ),

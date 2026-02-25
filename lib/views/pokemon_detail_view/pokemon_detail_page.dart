@@ -6,6 +6,7 @@ import 'package:pokedex/core/theme/app_theme.dart';
 import 'package:pokedex/models/pokemon_detail.dart';
 import 'package:pokedex/models/pokemon_list_response.dart';
 import 'package:pokedex/providers/pokemon_providers.dart';
+import 'package:pokedex/views/pokemon_detail_view/widgets/tilt_sprite.dart';
 
 class PokemonDetailPage extends ConsumerWidget {
   final PokemonEntry entry;
@@ -24,12 +25,14 @@ class PokemonDetailPage extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Hero(
-                    tag: 'pokemon-${entry.id}',
-                    child: CachedNetworkImage(
-                      imageUrl: entry.spriteUrl,
-                      height: 140,
-                      width: 140,
+                  TiltSprite(
+                    child: Hero(
+                      tag: 'pokemon-${entry.id}',
+                      child: CachedNetworkImage(
+                        imageUrl: entry.spriteUrl,
+                        height: 140,
+                        width: 140,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -122,28 +125,30 @@ class _DetailBody extends StatelessWidget {
                   Positioned.fill(
                     child: Align(
                       alignment: const Alignment(0, 0.2),
-                      child: Hero(
-                        tag: 'pokemon-${entry.id}',
-                        child: CachedNetworkImage(
-                          imageUrl: artworkUrl,
-                          height: 210,
-                          width: 210,
-                          fit: BoxFit.contain,
-                          placeholder:
-                              (_, __) => const SizedBox(
-                                height: 210,
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white54,
+                      child: TiltSprite(
+                        child: Hero(
+                          tag: 'pokemon-${entry.id}',
+                          child: CachedNetworkImage(
+                            imageUrl: artworkUrl,
+                            height: 210,
+                            width: 210,
+                            fit: BoxFit.contain,
+                            placeholder:
+                                (_, __) => const SizedBox(
+                                  height: 210,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white54,
+                                    ),
                                   ),
                                 ),
-                              ),
-                          errorWidget:
-                              (_, __, ___) => const Icon(
-                                Icons.catching_pokemon,
-                                size: 90,
-                                color: Colors.white30,
-                              ),
+                            errorWidget:
+                                (_, __, ___) => const Icon(
+                                  Icons.catching_pokemon,
+                                  size: 90,
+                                  color: Colors.white30,
+                                ),
+                          ),
                         ),
                       ),
                     ),
