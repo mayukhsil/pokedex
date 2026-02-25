@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pokedex/core/styles/type_colors.dart';
 import 'package:pokedex/core/theme/app_theme.dart';
-import 'package:pokedex/services/network_service.dart';
 import 'package:pokedex/models/pokemon_detail.dart';
 import 'package:pokedex/models/pokemon_list_response.dart';
 import 'package:pokedex/services/hive_service.dart';
+import 'package:pokedex/services/network_service.dart';
 
 // ── Service providers ─────────────────────────────────────────────────────────
 final networkServiceProvider = Provider<NetworkService>(

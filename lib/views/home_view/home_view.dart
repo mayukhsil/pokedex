@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pokedex/core/theme/app_theme.dart';
 import 'package:pokedex/providers/pokemon_providers.dart';
+import 'package:pokedex/providers/theme_provider.dart';
 import 'package:pokedex/views/home_view/widgets/pokemon_card.dart';
 
 class HomeView extends ConsumerStatefulWidget {
@@ -57,32 +58,61 @@ class _HomeViewState extends ConsumerState<HomeView> {
             ),
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
-              title: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'POKÉDEX',
-                    style: GoogleFonts.nunito(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w900,
-                      color: isDark ? Colors.white : AppTheme.darkSurface,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 3),
-                    child: Text(
-                      'ALL REGIONS',
-                      style: GoogleFonts.nunito(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.brandRed,
-                        letterSpacing: 1.5,
+              title: GestureDetector(
+                // Tap → toggle between light and dark
+                onTap: () => ref.read(themeProvider.notifier).toggle(),
+                // Swipe left → dark, swipe right → light
+                onHorizontalDragEnd: (details) {
+                  final v = details.primaryVelocity ?? 0;
+                  if (v < -200) {
+                    ref.read(themeProvider.notifier).setDark();
+                  } else if (v > 200) {
+                    ref.read(themeProvider.notifier).setLight();
+                  }
+                },
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'POKÉDEX',
+                        style: GoogleFonts.nunito(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? Colors.white : AppTheme.brandRed,
+                          letterSpacing: 2,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    // Visual hint — sun in light mode, moon in dark
+                    Padding(
+                      padding: EdgeInsets.only(left: 4, bottom: 6),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder:
+                            (child, anim) => RotationTransition(
+                              turns: anim,
+                              child: FadeTransition(
+                                opacity: anim,
+                                child: child,
+                              ),
+                            ),
+                        child: Icon(
+                          isDark
+                              ? Icons.dark_mode_rounded
+                              : Icons.light_mode_rounded,
+                          key: ValueKey(isDark),
+                          color:
+                              isDark
+                                  ? Colors.white54
+                                  : AppTheme.darkSurface.withValues(alpha: 0.4),
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

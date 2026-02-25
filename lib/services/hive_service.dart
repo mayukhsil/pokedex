@@ -5,12 +5,16 @@ import 'package:pokedex/models/pokemon_list_response.dart';
 /// Wrapper around Hive for all local persistence needs.
 class HiveService {
   static const String _pokemonListBox = 'pokemon_list_box';
+  static const String _settingsBox = 'settings_box';
+
   static const String _pokemonListKey = 'pokemon_list';
+  static const String _themeModeKey = 'is_dark_mode';
 
   /// Must be called once before the app starts (in main).
   static Future<void> init() async {
     await Hive.initFlutter();
     await Hive.openBox(_pokemonListBox);
+    await Hive.openBox(_settingsBox);
   }
 
   // ── Pokemon list ───────────────────────────────────────────────────────────
@@ -39,5 +43,17 @@ class HiveService {
   Future<void> clearPokemonList() async {
     final box = Hive.box(_pokemonListBox);
     await box.delete(_pokemonListKey);
+  }
+
+  // ── Theme preference ───────────────────────────────────────────────────────
+
+  /// Returns the persisted dark-mode flag, or `null` if never set (use system).
+  bool? loadIsDark() {
+    return Hive.box(_settingsBox).get(_themeModeKey) as bool?;
+  }
+
+  /// Persist whether dark mode is active.
+  Future<void> saveIsDark(bool isDark) async {
+    await Hive.box(_settingsBox).put(_themeModeKey, isDark);
   }
 }
