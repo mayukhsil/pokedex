@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:pokedex/core/styles/type_colors.dart';
 import 'package:pokedex/core/theme/app_theme.dart';
 import 'package:pokedex/models/pokemon_detail.dart';
@@ -45,7 +44,7 @@ class PokemonDetailPage extends ConsumerWidget {
             body: Center(
               child: Text(
                 'Failed to load',
-                style: GoogleFonts.nunito(
+                style: AppTheme.nunito(
                   color: scheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
@@ -97,7 +96,7 @@ class _DetailBody extends StatelessWidget {
                 children: [
                   Text(
                     '#${detail.id.toString().padLeft(3, '0')}',
-                    style: GoogleFonts.nunito(
+                    style: AppTheme.nunito(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: Colors.white60,
@@ -106,7 +105,7 @@ class _DetailBody extends StatelessWidget {
                   ),
                   Text(
                     _capitalize(detail.name).toUpperCase(),
-                    style: GoogleFonts.nunito(
+                    style: AppTheme.nunito(
                       fontSize: 20,
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
@@ -289,7 +288,7 @@ class _BoxySection extends StatelessWidget {
             ),
             child: Text(
               title,
-              style: GoogleFonts.nunito(
+              style: AppTheme.nunito(
                 color: Colors.white,
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
@@ -320,7 +319,7 @@ class _TypeTag extends StatelessWidget {
       ),
       child: Text(
         type.toUpperCase(),
-        style: GoogleFonts.nunito(
+        style: AppTheme.nunito(
           color: Colors.white,
           fontSize: 12,
           fontWeight: FontWeight.w800,
@@ -352,7 +351,7 @@ class _StatPill extends StatelessWidget {
           children: [
             Text(
               value,
-              style: GoogleFonts.nunito(
+              style: AppTheme.nunito(
                 color: scheme.onSurface,
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
@@ -361,7 +360,7 @@ class _StatPill extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label.toUpperCase(),
-              style: GoogleFonts.nunito(
+              style: AppTheme.nunito(
                 color: scheme.onSurface.withValues(alpha: 0.45),
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
@@ -414,7 +413,7 @@ class _AbilityTag extends StatelessWidget {
           ],
           Text(
             _fmt(name),
-            style: GoogleFonts.nunito(
+            style: AppTheme.nunito(
               color:
                   isHidden
                       ? accentColor
@@ -466,7 +465,7 @@ class _StatBar extends StatelessWidget {
             width: 66,
             child: Text(
               label,
-              style: GoogleFonts.nunito(
+              style: AppTheme.nunito(
                 color: scheme.onSurface.withValues(alpha: 0.45),
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
@@ -478,7 +477,7 @@ class _StatBar extends StatelessWidget {
             width: 34,
             child: Text(
               '$value',
-              style: GoogleFonts.nunito(
+              style: AppTheme.nunito(
                 color: scheme.onSurface.withValues(alpha: 0.8),
                 fontSize: 12,
                 fontWeight: FontWeight.w800,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Single source of truth for all visual design decisions.
 ///
@@ -63,16 +62,36 @@ abstract final class AppTheme {
       RoundedRectangleBorder(borderRadius: boxyRadius);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Internal helpers
+  // Font helpers
   // ─────────────────────────────────────────────────────────────────────────
 
-  /// Returns a Nunito [TextTheme] matched to [brightness].
-  static TextTheme _textTheme(Brightness brightness) =>
-      GoogleFonts.nunitoTextTheme(
-        brightness == Brightness.light
-            ? ThemeData.light().textTheme
-            : ThemeData.dark().textTheme,
-      );
+  /// Creates a [TextStyle] using the bundled Nunito variable font.
+  ///
+  /// Drop-in replacement for `GoogleFonts.nunito(...)` — no network required.
+  static TextStyle nunito({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? letterSpacing,
+    double? height,
+    TextDecoration? decoration,
+  }) => TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: fontSize,
+    fontWeight: fontWeight,
+    color: color,
+    letterSpacing: letterSpacing,
+    height: height,
+    decoration: decoration,
+  );
+
+  /// Returns a full [TextTheme] backed by the bundled Nunito variable font.
+  ///
+  /// Applies the Nunito family to every text style in [base] so that all
+  /// default Flutter text widgets use the correct typeface without any
+  /// per-widget `fontFamily` override.
+  static TextTheme _textTheme(TextTheme base) =>
+      base.apply(fontFamily: 'Nunito');
 
   // ─────────────────────────────────────────────────────────────────────────
   // Light theme (default — white scaffold)
@@ -91,7 +110,7 @@ abstract final class AppTheme {
       brightness: Brightness.light,
     ),
     scaffoldBackgroundColor: Colors.white,
-    textTheme: _textTheme(Brightness.light),
+    textTheme: _textTheme(ThemeData.light().textTheme),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.white,
       foregroundColor: darkSurface,
@@ -137,7 +156,7 @@ abstract final class AppTheme {
       surface: darkSurface,
     ),
     scaffoldBackgroundColor: darkSurface,
-    textTheme: _textTheme(Brightness.dark),
+    textTheme: _textTheme(ThemeData.dark().textTheme),
     appBarTheme: const AppBarTheme(
       backgroundColor: darkAppBar,
       foregroundColor: Colors.white,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:pokedex/core/theme/app_theme.dart';
 import 'package:pokedex/providers/pokemon_providers.dart';
 import 'package:pokedex/providers/theme_provider.dart';
@@ -77,7 +76,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     Flexible(
                       child: Text(
                         'POKÉDEX',
-                        style: GoogleFonts.nunito(
+                        style: AppTheme.nunito(
                           fontSize: 26,
                           fontWeight: FontWeight.w900,
                           color: isDark ? Colors.white : AppTheme.brandRed,
@@ -139,7 +138,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                         const SizedBox(height: 12),
                         Text(
                           'Something went wrong',
-                          style: GoogleFonts.nunito(
+                          style: AppTheme.nunito(
                             color: scheme.onSurface.withValues(alpha: 0.7),
                           ),
                         ),

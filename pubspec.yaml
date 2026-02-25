@@ -48,3 +48,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Nunito
+      fonts:
+        # Variable font — covers weights 200-900 in a single file.
+        # No Google Fonts CDN needed; fully bundled with the app.
+        - asset: fonts/Nunito/NunitoVariable.ttf

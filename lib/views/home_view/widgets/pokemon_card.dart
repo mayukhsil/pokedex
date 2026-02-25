@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:pokedex/core/navigator/app_router.dart';
 import 'package:pokedex/core/theme/app_theme.dart';
 import 'package:pokedex/models/pokemon_list_response.dart';
@@ -67,7 +66,7 @@ class PokemonCard extends ConsumerWidget {
                     // ID
                     Text(
                       '#${id.toString().padLeft(3, '0')}',
-                      style: GoogleFonts.nunito(
+                      style: AppTheme.nunito(
                         color: dimTextColor,
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -78,7 +77,7 @@ class PokemonCard extends ConsumerWidget {
                     // Name
                     Text(
                       _capitalize(entry.name),
-                      style: GoogleFonts.nunito(
+                      style: AppTheme.nunito(
                         color: textColor,
                         fontSize: 15,
                         fontWeight: FontWeight.w900,
@@ -174,7 +173,7 @@ class _TypeBadge extends StatelessWidget {
       ),
       child: Text(
         typeName.toUpperCase(),
-        style: GoogleFonts.nunito(
+        style: AppTheme.nunito(
           color: color,
           fontSize: 9,
           fontWeight: FontWeight.w800,
